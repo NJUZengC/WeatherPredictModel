@@ -79,6 +79,7 @@ public class HMMModel {
     }*/
 
     //return  N * T
+    /*
 
     public double[][] forward(int[] sequence){
 
@@ -105,6 +106,7 @@ public class HMMModel {
         return alpha;
 
     }
+    */
 
     /*
     //return N * T
@@ -116,6 +118,7 @@ public class HMMModel {
 
     //return  N * T
 
+    /*
     public double[][] backward(int[] sequence){
         int T = sequence.length;
 
@@ -140,6 +143,7 @@ public class HMMModel {
         return beta;
 
     }
+    */
 
     /*
     //return T * 1
@@ -150,6 +154,8 @@ public class HMMModel {
 
     //return T
 
+
+/*
     public double[] gamma(int[] sequence,int i,double[][] alpha,double[][] beta){
 
         int T = sequence.length;
@@ -172,7 +178,7 @@ public class HMMModel {
         return gamma;
 
     }
-
+    */
 
     /*
     //return T * 1
@@ -183,6 +189,7 @@ public class HMMModel {
 
     //return T
 
+    /*
     public double[] sigma(int[] sequence,int i,int j,double[][] alpha,double[][] beta){
         int T = sequence.length;
         double[] sigma = new double[T];
@@ -210,6 +217,7 @@ public class HMMModel {
         return sigma;
 
     }
+    */
 
     public double[] getPi() {
         return pi;
@@ -217,6 +225,24 @@ public class HMMModel {
 
     public void setPi(double[] pi) {
         this.pi = pi;
+    }
+
+
+    public double[][] getA() {
+        return a;
+    }
+
+    public void setA(double[][] a) {
+        this.a = a;
+    }
+
+
+    public double[][] getB() {
+        return b;
+    }
+
+    public void setB(double[][] b) {
+        this.b = b;
     }
 
     public int getObserveSize() {
@@ -236,7 +262,7 @@ public class HMMModel {
         this.hiddenSize = hiddenSize;
     }
 
-
+/*
     //维特比算法
     //return path[T]
     public int[] viterbi(int[] sequence){
@@ -296,5 +322,6 @@ public class HMMModel {
         return path;
 
     }
+    */
 
 }
