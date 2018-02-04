@@ -92,7 +92,7 @@ public class HMMModel {
 
         for (int t=0; t<T-1; t++){
             for (int j=0; j<hiddenSize; j++){
-                
+
                 alpha[j][t+1] = 0.0;
                 for (int i=0; i<hiddenSize; i++){
                     alpha[j][t+1] += (alpha[i][t] * a[i][j]);
@@ -208,5 +208,63 @@ public class HMMModel {
     }
 
 
+    //维特比算法
+    //return path[T]
+    public int[] viterbi(int[] sequence){
+
+        int T = sequence.length;
+        Double[][] delta = new Double[hiddenSize][T];
+        int[][] phi = new int[hiddenSize][T];
+        int[] path = new int[T];
+
+        //初始化delta以及phi
+        for (int i=0; i<hiddenSize; i++){
+            delta[i][0] = pi[i] * b[i][sequence[0]];
+            phi[i][0] = 0;
+        }
+
+        //递归求解delta[i][t]和phi[i][t]
+        for (int t=1; t<T; t++){
+            for (int i=0; i<hiddenSize; i++){
+
+                double prob = -1;
+                int state = 0;
+
+                for (int j=0; j<hiddenSize; j++){
+
+                    double nprob = delta[j][t-1] * a[j][i] * b[i][sequence[t]];
+
+                    if (nprob>prob) {
+
+                        prob = nprob;
+                        state = j;
+
+                    }
+                }
+
+                delta[i][t] = prob;
+                phi[i][t] = state;
+            }
+
+        }
+
+        //终止
+        double prob = -1;
+        for (int i=0; i<hiddenSize; i++){
+            if (delta[i][T-1]>prob) {
+                prob =delta[i][T-1];
+                path[T-1] = i;
+            }
+        }
+
+        //最优路径回溯
+        for (int t=T-2; t>=0; t--) {
+            path[t] = phi[path[t+1]][t+1];
+        }
+
+        //最优路径序列
+        return path;
+
+    }
 
 }
