@@ -1,6 +1,7 @@
 package com.byckdoop;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -13,7 +14,7 @@ import java.util.StringTokenizer;
  * @author zengc
  * @date 2018/2/3 13:29
  */
-public class TrainMapper extends Mapper<Object, Text, Text, IntWritable> {
+public class TrainMapper extends Mapper<Object, Text, Text, DoubleWritable> {
 
     HMMModel hmmModel = new HMMModel();
 
@@ -28,10 +29,28 @@ public class TrainMapper extends Mapper<Object, Text, Text, IntWritable> {
         }
 
         hmmModel.init(observeSize,hiddenSize);
+        System.out.println("hahahha");
 
     }
 
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+
+        String sq = value.toString();
+        String []strSequence = sq.split(" ");
+        int []o = new int[strSequence.length];
+
+        for(int i=0;i<strSequence.length;i++)
+            o[i] = Integer.parseInt(strSequence[i]);
+
+        double []initialMatrix = new double[hmmModel.getHiddenSize()];
+        double [][]transitionMatrix = new double[hmmModel.getHiddenSize()][hmmModel.getHiddenSize()];
+        double [][]emitMatrix = new double[hmmModel.getHiddenSize()][hmmModel.getObserveSize()];
+
+        double [][] alpha;
+        double [][] beta;
+
+        alpha = hmmModel.forward(o);
+        beta = hmmModel.backward(o);
 
         String temp = new String();
         String Interface = new String();
@@ -46,7 +65,7 @@ public class TrainMapper extends Mapper<Object, Text, Text, IntWritable> {
                 first = temp;
             }
             else {
-                context.write(new Text(first), new IntWritable(Integer.parseInt(temp)));
+                context.write(new Text(first), new DoubleWritable((double)hmmModel.getPi()[1]));
             }
             index++;
         }

@@ -2,6 +2,7 @@ package com.byckdoop;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -33,9 +34,9 @@ public class WeatherPredictModelMain  {
         //job.setCombinerClass(InterfaceFrequentCombiner.class);
         job.setReducerClass(TrainReducer.class);
         job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(IntWritable.class);
+        job.setOutputValueClass(Text.class);
         job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(IntWritable.class);
+        job.setMapOutputValueClass(DoubleWritable.class);
         FileInputFormat.addInputPath(job, new Path(otherArgs[2]));
         FileOutputFormat.setOutputPath(job, new Path(otherArgs[3]));
         System.exit(job.waitForCompletion(true) ? 0 : 1);

@@ -21,9 +21,9 @@ public class HMMModel {
     private List<List<Double>> b; // N * M
     */
 
-    private Double[] pi; // N
-    private Double[][] a;  //  N * N
-    private Double[][] b; // N * M
+    private double[] pi; // N
+    private double[][] a;  //  N * N
+    private double[][] b; // N * M
     /*
     public void init(int observeSize,int hiddenSize){
         this.observeSize = observeSize;
@@ -53,9 +53,9 @@ public class HMMModel {
     public void init(int observeSize,int hiddenSize){
         this.observeSize = observeSize;
         this.hiddenSize = hiddenSize;
-        this.pi = new Double[hiddenSize];
-        this.a = new Double[hiddenSize][hiddenSize];
-        this.b = new Double[hiddenSize][observeSize];
+        this.pi = new double[hiddenSize];
+        this.a = new double[hiddenSize][hiddenSize];
+        this.b = new double[hiddenSize][observeSize];
 
         for(int i=0;i<hiddenSize;i++){
             pi[i] = (Math.random());
@@ -66,7 +66,7 @@ public class HMMModel {
             }
 
             for(int k=0;k<observeSize;k++){
-                a[i][k] = (Math.random());
+                b[i][k] = (Math.random());
             }
         }
     }
@@ -79,11 +79,12 @@ public class HMMModel {
     }*/
 
     //return  N * T
-    public Double[][] forward(int[] sequence){
+
+    public double[][] forward(int[] sequence){
 
         int T = sequence.length;
 
-        Double[][] alpha = new Double[hiddenSize][T];
+        double[][] alpha = new double[hiddenSize][T];
 
         //初始化alpha
         for (int i=0; i<hiddenSize; i++){
@@ -114,11 +115,11 @@ public class HMMModel {
     }*/
 
     //return  N * T
-    public Double[][] backward(int[] sequence){
 
+    public double[][] backward(int[] sequence){
         int T = sequence.length;
 
-        Double[][] beta = new Double[hiddenSize][T];
+        double[][] beta = new double[hiddenSize][T];
 
         //初始化beta
         for (int i=0; i<hiddenSize; i++){
@@ -148,11 +149,12 @@ public class HMMModel {
     }*/
 
     //return T
-    public Double[] gamma(int[] sequence,int i,Double[][] alpha,Double[][] beta){
+
+    public double[] gamma(int[] sequence,int i,double[][] alpha,double[][] beta){
 
         int T = sequence.length;
 
-        Double[] gamma = new Double[T];
+        double[] gamma = new double[T];
 
         for (int t=0; t<T; t++){
 
@@ -168,6 +170,7 @@ public class HMMModel {
         }
 
         return gamma;
+
     }
 
 
@@ -179,10 +182,10 @@ public class HMMModel {
     }*/
 
     //return T
-    public Double[] sigma(int[] sequence,int i,int j,Double[][] alpha,Double[][] beta){
 
+    public double[] sigma(int[] sequence,int i,int j,double[][] alpha,double[][] beta){
         int T = sequence.length;
-        Double[] sigma = new Double[T];
+        double[] sigma = new double[T];
 
         for (int t=0; t<T; t++){
 
@@ -205,6 +208,32 @@ public class HMMModel {
 
 
         return sigma;
+
+    }
+
+    public double[] getPi() {
+        return pi;
+    }
+
+    public void setPi(double[] pi) {
+        this.pi = pi;
+    }
+
+    public int getObserveSize() {
+        return observeSize;
+    }
+
+
+    public void setObserveSize(int observeSize) {
+        this.observeSize = observeSize;
+    }
+
+    public int getHiddenSize() {
+        return hiddenSize;
+    }
+
+    public void setHiddenSize(int hiddenSize) {
+        this.hiddenSize = hiddenSize;
     }
 
 
@@ -213,7 +242,8 @@ public class HMMModel {
     public int[] viterbi(int[] sequence){
 
         int T = sequence.length;
-        Double[][] delta = new Double[hiddenSize][T];
+
+        double[][] delta = new double[hiddenSize][T];
         int[][] phi = new int[hiddenSize][T];
         int[] path = new int[T];
 
