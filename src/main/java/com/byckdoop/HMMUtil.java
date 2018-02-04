@@ -6,25 +6,25 @@ package com.byckdoop;
  */
 public class HMMUtil {
 
-    public double[][] forward(HMMModel hmmModel,int[] sequence){
+    public static double[][] forward(HMMModel hmmModel,int[] sequence){
         return null;
     }
 
-    public double[][] backward(HMMModel hmmModel,int[] sequence){
+    public static double[][] backward(HMMModel hmmModel,int[] sequence){
         return null;
     }
 
-    public double[] gamma(HMMModel hmmModel,int[] sequence,int i,double[][] alpha,double[][] beta){
+    public static double[] gamma(HMMModel hmmModel,int[] sequence,int i,double[][] alpha,double[][] beta){
         return null;
     }
 
-    public double[] sigma(int[] sequence,int i,int j,double[][] alpha,double[][] beta){
+    public static double[] sigma(int[] sequence,int i,int j,double[][] alpha,double[][] beta){
         return null;
     }
 
     //维特比算法
     //return path[T]
-    public int[] viterbi(HMMModel hmmModel,int[] sequence){
+    public static int[] viterbi(HMMModel hmmModel,int[] sequence){
         return null;
     }
 
