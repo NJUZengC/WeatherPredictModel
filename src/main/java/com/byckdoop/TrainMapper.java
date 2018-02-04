@@ -1,12 +1,14 @@
 package com.byckdoop;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 
@@ -14,7 +16,7 @@ import java.util.StringTokenizer;
  * @author zengc
  * @date 2018/2/3 13:29
  */
-public class TrainMapper extends Mapper<Object, Text, Text, DoubleWritable> {
+public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
 
     HMMModel hmmModel = new HMMModel();
 
@@ -42,32 +44,55 @@ public class TrainMapper extends Mapper<Object, Text, Text, DoubleWritable> {
         for(int i=0;i<strSequence.length;i++)
             o[i] = Integer.parseInt(strSequence[i]);
 
-        double []initialMatrix = new double[hmmModel.getHiddenSize()];
-        double [][]transitionMatrix = new double[hmmModel.getHiddenSize()][hmmModel.getHiddenSize()];
-        double [][]emitMatrix = new double[hmmModel.getHiddenSize()][hmmModel.getObserveSize()];
+        HMMArrayWritable pi = new HMMArrayWritable();
+
+        DoubleWritable []initialMatrix = new DoubleWritable[hmmModel.getHiddenSize()];
+        DoubleWritable [][]transitionMatrix = new DoubleWritable[hmmModel.getHiddenSize()][hmmModel.getHiddenSize()];
+        DoubleWritable [][]emitMatrix = new DoubleWritable[hmmModel.getHiddenSize()][hmmModel.getObserveSize()];
 
         double [][] alpha;
         double [][] beta;
 
-        alpha = hmmModel.forward(o);
-        beta = hmmModel.backward(o);
+        alpha = HMMUtil.forward(hmmModel,o);
+        beta = HMMUtil.backward(hmmModel,o);
 
-        String temp = new String();
-        String Interface = new String();
-        String TimeInterval = new String();
-        String line = value.toString();
-        StringTokenizer itr = new StringTokenizer(line);
-        int index = 0;
-        String first = "";
-        for(; itr.hasMoreTokens();) {
-            temp = itr.nextToken();
-            if(index == 0){
-                first = temp;
-            }
-            else {
-                context.write(new Text(first), new DoubleWritable((double)hmmModel.getPi()[1]));
-            }
-            index++;
+
+        double [][]gamma = new double[hmmModel.getHiddenSize()][o.length+1];
+
+        for(int i=0;i<hmmModel.getHiddenSize();i++) {
+            gamma[i] = HMMUtil.gamma(hmmModel, o, i, alpha, beta);
+            initialMatrix[i] = new DoubleWritable(gamma[i][0]);
         }
+        pi.set(initialMatrix);
+        context.write(new Text("initial from "),pi);
+
+
+        for(int i=0;i<hmmModel.getHiddenSize();i++){
+            HMMArrayWritable a = new HMMArrayWritable();
+
+            for(int j=0;j<hmmModel.getHiddenSize();j++){
+                double []sigma = HMMUtil.sigma(hmmModel,o,i,j,alpha,beta);
+                transitionMatrix[i][j] = new DoubleWritable(sigma[sigma.length - 1]/gamma[i][gamma[i].length-1]);
+            }
+            a.set(transitionMatrix[i]);
+            context.write(new Text("transit from "+i),a);
+        }
+
+        for(int i=0;i<hmmModel.getHiddenSize();i++){
+
+            HMMArrayWritable b = new HMMArrayWritable();
+            for(int j=0;j<hmmModel.getObserveSize();j++){
+                double sum = 0;
+                for(int k = 0;k<o.length;k++){
+                    if(o[k]==j)
+                        sum += gamma[i][k];
+                }
+                emitMatrix[i][j] = new DoubleWritable(sum/gamma[i][gamma[i].length-1]);
+            }
+            b.set(emitMatrix[i]);
+            context.write(new Text("emit from "+i),b);
+        }
+
+
     }
 }
