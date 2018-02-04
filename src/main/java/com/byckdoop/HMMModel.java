@@ -79,9 +79,29 @@ public class HMMModel {
     }*/
 
     //return  N * T
-    public Double[][] forward(Double[] sequence){
+    public Double[][] forward(int[] sequence){
 
-        return null;
+        int T = sequence.length;
+
+        Double[][] alpha = new Double[hiddenSize][T];
+
+        //初始化alpha
+        for (int i=0; i<hiddenSize; i++){
+            alpha[i][0] = pi[i] * b[i][sequence[0]];
+        }
+
+        for (int t=0; t<T-1; t++){
+            for (int j=0; j<hiddenSize; j++){
+                
+                alpha[j][t+1] = 0.0;
+                for (int i=0; i<hiddenSize; i++){
+                    alpha[j][t+1] += (alpha[i][t] * a[i][j]);
+                }
+                alpha[j][t+1] *= b[j][sequence[t+1]];
+            }
+        }
+
+        return alpha;
 
     }
 
@@ -94,9 +114,29 @@ public class HMMModel {
     }*/
 
     //return  N * T
-    public Double[][] backward(Double[] sequence){
+    public Double[][] backward(int[] sequence){
 
-        return null;
+        int T = sequence.length;
+
+        Double[][] beta = new Double[hiddenSize][T];
+
+        //初始化beta
+        for (int i=0; i<hiddenSize; i++){
+            beta[i][T-1] = 1.0;
+        }
+
+        for (int t=T-2; t>=0; t--){
+            for (int i=0; i<hiddenSize; i++){
+
+                beta[i][t] = 0.0;
+                for (int j=0; j<hiddenSize; j++){
+                    beta[i][t] += a[i][j] * b[j][sequence[t+1]] * beta[j][t+1];
+                }
+
+            }
+        }
+
+        return beta;
 
     }
 
@@ -108,9 +148,26 @@ public class HMMModel {
     }*/
 
     //return T
-    public Double[] gamma(List<Double> sequence,int i,List<ArrayWritable> alpha,List<ArrayWritable> beta){
+    public Double[] gamma(int[] sequence,int i,Double[][] alpha,Double[][] beta){
 
-        return null;
+        int T = sequence.length;
+
+        Double[] gamma = new Double[T];
+
+        for (int t=0; t<T; t++){
+
+            Double num = alpha[i][t] * beta[i][t]; //分子
+
+            Double denom = 0.0; //分母
+            for (int j=0; j<hiddenSize; j++){
+                denom += alpha[j][t] * beta[j][t];
+            }
+
+            gamma[t] = num/denom;
+
+        }
+
+        return gamma;
     }
 
 
@@ -122,9 +179,32 @@ public class HMMModel {
     }*/
 
     //return T
-    public Double[] sigma(List<Double> sequence,int i,int j,List<ArrayWritable> alpha,List<ArrayWritable> beta){
+    public Double[] sigma(int[] sequence,int i,int j,Double[][] alpha,Double[][] beta){
 
-        return null;
+        int T = sequence.length;
+        Double[] sigma = new Double[T];
+
+        for (int t=0; t<T; t++){
+
+            Double num; //分子
+
+            if (t == T-1) {
+                num = alpha[i][t] * a[i][j];
+            } else {
+                num = alpha[i][t] * a[i][j] * b[j][sequence[t+1]] * beta[j][t+1];
+            }
+
+            Double denom = 0.0; //分母
+
+            for (int k=0; k<hiddenSize; k++){
+                denom += (alpha[k][t] * beta[k][t]);
+            }
+
+            sigma[t] = num/denom;
+        }
+
+
+        return sigma;
     }
 
 
