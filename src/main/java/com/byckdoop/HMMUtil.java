@@ -110,7 +110,9 @@ public class HMMUtil {
             Double num; //分子
 
             if (t == T-1) {
+                //在T时刻（从1开始计算），分子的值为：
                 num = alpha[i][t] * a[i][j];
+                //num = alpha[i][t] * beta[i][t];
             } else {
                 num = alpha[i][t] * a[i][j] * b[j][sequence[t+1]] * beta[j][t+1];
             }
