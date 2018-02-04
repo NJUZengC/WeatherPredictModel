@@ -27,6 +27,8 @@ public class TrainMapper extends Mapper<Object, Text, Text, IntWritable> {
             System.exit(-1);
         }
 
+        hmmModel.init(observeSize,hiddenSize);
+
     }
 
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
