@@ -12,4 +12,6 @@ public interface WeatherModelConfig {
     String observeSize = "com.byckdoop.observeSize";
 
     String iterationNum = "com.byckdoop.iterationNum";
+
+    String debugInfo = "com.byckdoop.debugInfo";
 }

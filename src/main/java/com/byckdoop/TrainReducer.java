@@ -22,12 +22,20 @@ public class TrainReducer extends Reducer<Text, HMMArrayWritable, Text, ArrayWri
     }
 
     public void reduce(Text key, Iterable<HMMArrayWritable> values, Context context) throws IOException, InterruptedException {
-        double sum = 0;
-        String np = "";
-        for (HMMArrayWritable val : values) {
-            context.write(key,val);
-            output.write("HMMMODEL",key,val);
+        if(key.toString().equals(WeatherModelConfig.debugInfo)){
+            for (HMMArrayWritable val : values) {
+                output.write("Debug",key,val);
 
+            }
+
+        }else {
+            double sum = 0;
+            String np = "";
+            for (HMMArrayWritable val : values) {
+                context.write(key, val);
+                output.write("HMMMODEL", key, val);
+
+            }
         }
 
 

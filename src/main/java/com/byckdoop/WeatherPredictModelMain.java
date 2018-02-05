@@ -6,6 +6,7 @@ import org.apache.hadoop.fs.Path;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.filecache.DistributedCache;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
@@ -35,6 +36,17 @@ public class WeatherPredictModelMain  {
 
             @SuppressWarnings("deprecation")
             Job job = new Job(conf, "InterfaceFrequent");
+            if(index > 0) {
+                String hdfspath =  otherArgs[3]+(index-1)+"/HMMMODEL-r-00000";
+                Path path = new Path(hdfspath);
+                FileSystem fileSystem = path.getFileSystem(conf);
+                //getFileSystem()函数功能  Return the FileSystem that owns this Path.
+                if (!fileSystem.exists(new Path(hdfspath))) {
+                    System.out.println("Something Wrong in HMMMODEL");
+                }
+                System.out.println("Something Wright in HMMMODEL");
+                job.addCacheFile( path.toUri());
+            }
             job.setJarByClass(WeatherPredictModelMain.class);
             job.setMapperClass(TrainMapper.class);
             //job.setCombinerClass(InterfaceFrequentCombiner.class);
@@ -43,20 +55,16 @@ public class WeatherPredictModelMain  {
             job.setOutputValueClass(HMMArrayWritable.class);
             job.setMapOutputKeyClass(Text.class);
             job.setMapOutputValueClass(HMMArrayWritable.class);
-            String hdfspath =  otherArgs[3]+(index-1)+"/HMMMODEL-r-00000";
-            Path path = new Path(hdfspath);
-            FileSystem fileSystem = path.getFileSystem(conf);
-            //getFileSystem()函数功能  Return the FileSystem that owns this Path.
-            if (fileSystem.exists(new Path(hdfspath))) {
-                System.out.println("here");
-            }
+
             MultipleOutputs.addNamedOutput(job, "HMMMODEL", TextOutputFormat.class, Text.class, Text.class);
+            MultipleOutputs.addNamedOutput(job, "Debug", TextOutputFormat.class, Text.class, Text.class);
             FileInputFormat.addInputPath(job, new Path(otherArgs[2]));
             FileOutputFormat.setOutputPath(job, new Path(otherArgs[3]+index));
-            path = new Path(otherArgs[3]+(index-1));
-            fileSystem = path.getFileSystem(conf);
+            Path path = new Path(otherArgs[3]+(index-1));
+            FileSystem fileSystem = path.getFileSystem(conf);
             //getFileSystem()函数功能  Return the FileSystem that owns this Path.
             if (fileSystem.exists(new Path(otherArgs[3]+(index-1)))) {
+                System.out.println(path.toString());
                 fileSystem.delete(new Path(otherArgs[3]+(index-1)),true);
             }
             job.waitForCompletion(true);

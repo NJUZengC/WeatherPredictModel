@@ -1,6 +1,7 @@
 package com.byckdoop;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -24,14 +25,23 @@ public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
         Configuration configuration = context.getConfiguration();
         int observeSize = configuration.getInt(WeatherModelConfig.observeSize,-1);
         int hiddenSize = configuration.getInt(WeatherModelConfig.hiddenSize,-1);
+        int iterationNum = configuration.getInt(WeatherModelConfig.iterationNum,-1);
 
         if(observeSize <=0 || hiddenSize <= 0){
             System.out.println("Exception <= 0");
             System.exit(-1);
         }
-
-        hmmModel.init(observeSize,hiddenSize);
-        System.out.println("hahahha");
+        if(iterationNum == 0) {
+            hmmModel.init(observeSize, hiddenSize);
+        }else {
+            Path[] cacheFiles = context.getLocalCacheFiles();
+            if(cacheFiles.length ==1) {
+                HMMArrayWritable debug = new HMMArrayWritable();
+                DoubleWritable[] doubleWritables = new DoubleWritable[]{new DoubleWritable(2.33)};
+                debug.set(doubleWritables);
+                context.write(new Text(WeatherModelConfig.debugInfo), debug);
+            }
+        }
 
     }
 
@@ -64,7 +74,7 @@ public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
             initialMatrix[i] = new DoubleWritable(gamma[i][0]);
         }
         pi.set(initialMatrix);
-        context.write(new Text("initial from "),pi);
+        context.write(new Text("I"),pi);
 
 
         for(int i=0;i<hmmModel.getHiddenSize();i++){
@@ -75,7 +85,7 @@ public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
                 transitionMatrix[i][j] = new DoubleWritable(sigma[sigma.length - 1]/(gamma[i][gamma[i].length-1]-gamma[i][gamma[i].length-2]));
             }
             a.set(transitionMatrix[i]);
-            context.write(new Text("transit from "+i),a);
+            context.write(new Text("T"+i),a);
         }
 
         for(int i=0;i<hmmModel.getHiddenSize();i++){
@@ -90,7 +100,7 @@ public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
                 emitMatrix[i][j] = new DoubleWritable(sum/gamma[i][gamma[i].length-1]);
             }
             b.set(emitMatrix[i]);
-            context.write(new Text("emit from "+i),b);
+            context.write(new Text("E"+i),b);
         }
 
 
