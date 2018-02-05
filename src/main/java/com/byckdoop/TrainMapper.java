@@ -72,7 +72,7 @@ public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
 
             for(int j=0;j<hmmModel.getHiddenSize();j++){
                 double []sigma = HMMUtil.sigma(hmmModel,o,i,j,alpha,beta);
-                transitionMatrix[i][j] = new DoubleWritable(sigma[sigma.length - 1]/gamma[i][gamma[i].length-1]);
+                transitionMatrix[i][j] = new DoubleWritable(sigma[sigma.length - 1]/(gamma[i][gamma[i].length-1]-gamma[i][gamma[i].length-2]));
             }
             a.set(transitionMatrix[i]);
             context.write(new Text("transit from "+i),a);

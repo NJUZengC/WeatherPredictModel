@@ -10,4 +10,6 @@ public interface WeatherModelConfig {
     String hiddenSize = "com.byckdoop.hiddenSize";
 
     String observeSize = "com.byckdoop.observeSize";
+
+    String iterationNum = "com.byckdoop.iterationNum";
 }
