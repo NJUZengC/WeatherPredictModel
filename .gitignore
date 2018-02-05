@@ -11,3 +11,4 @@ gen
 .idea/inspectionProfiles/
 src/main/resources/
 src/test/
+target/
