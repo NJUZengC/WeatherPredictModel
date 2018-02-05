@@ -204,7 +204,33 @@ public class HMMUtil {
 
     public static int predict(HMMModel hmmModel,int[] sequence){
         //todo: sequence为观测序列，长度为T，前T-1个正确观测序列，第T个为占位符。返回最大可能的第T个观测序列
-        return 0;
+
+        int T = sequence.length;
+        int observeSize = hmmModel.getObserveSize();
+        int hiddenSize = hmmModel.getHiddenSize();
+        //double[] pi = hmmModel.getPi();
+        //double[][] a = hmmModel.getA();
+        //double[][] b = hmmModel.getB();
+        double prob = 0;  //记录P(O|m);
+        int observe = 0;  //记录最大可能的第T个观测值；
+
+        for (int o=0; o<observeSize; o++) {
+            sequence[T-1] = o;
+            int nprob = 0;
+
+            for (int i=0; i<hiddenSize; i++) {
+                nprob += forward(hmmModel, sequence)[i][T-1];
+                //记录：给定模型，当前观测序列出现的概率；
+            }
+            if (nprob > prob) {
+                prob = nprob;
+                observe = o;
+                //记录最大的概率及其对应的观测值；
+            }
+
+        }
+        
+        return observe;
     }
 
 
