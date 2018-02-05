@@ -102,7 +102,7 @@ public class HMMUtil {
         double[][] a = hmmModel.getA();
         double[][] b = hmmModel.getB();
 
-        //定义sigma为一个长度为T+1的数组，其中最后一项表示前T项之和；
+        //定义sigma为一个长度为T的数组，前T-1项为t从0到T-1时刻的sigma值，其中最后一项表示前T-1项之和；
         double[] sigma = new double[T];
 
         for (int t=0; t<T-1; t++){
