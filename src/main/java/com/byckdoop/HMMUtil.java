@@ -202,5 +202,10 @@ public class HMMUtil {
 
     }
 
+    public static int predict(HMMModel hmmModel,int[] sequence){
+        //todo: sequence为观测序列，长度为T，前T-1个正确观测序列，第T个为占位符。返回最大可能的第T个观测序列
+        return 0;
+    }
+
 
 }

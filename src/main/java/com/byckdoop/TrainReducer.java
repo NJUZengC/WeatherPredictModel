@@ -4,6 +4,7 @@ import org.apache.hadoop.io.ArrayWritable;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import java.io.IOException;
 
@@ -13,12 +14,23 @@ import java.io.IOException;
  */
 public class TrainReducer extends Reducer<Text, HMMArrayWritable, Text, ArrayWritable> {
 
+    private MultipleOutputs<Text,ArrayWritable> output;
+
+
+    public void setup(Context context)throws IOException, InterruptedException{
+        output = new MultipleOutputs<Text,ArrayWritable>(context);
+    }
+
     public void reduce(Text key, Iterable<HMMArrayWritable> values, Context context) throws IOException, InterruptedException {
         double sum = 0;
         String np = "";
         for (HMMArrayWritable val : values) {
             context.write(key,val);
+            output.write("HMMMODEL",key,val);
+
         }
+
+
 
 
     }
