@@ -102,18 +102,22 @@ public class HMMUtil {
         double[][] a = hmmModel.getA();
         double[][] b = hmmModel.getB();
 
-        //定义sigma为一个长度为T+1的数组，其中最后一项表示前T项之和；
-        double[] sigma = new double[T+1];
+        //定义sigma为一个长度为T的数组，前T-1项为t从0到T-1时刻的sigma值，其中最后一项表示前T-1项之和；
+        double[] sigma = new double[T];
 
-        for (int t=0; t<T; t++){
+        for (int t=0; t<T-1; t++){
 
-            Double num; //分子
-
+            Double num = alpha[i][t] * a[i][j] * b[j][sequence[t+1]] * beta[j][t+1]; //分子
+            /*
             if (t == T-1) {
+                //在T时刻（从1开始计算），分子的值为：
                 num = alpha[i][t] * a[i][j];
+                //num = alpha[i][t] * beta[i][t];
             } else {
+
                 num = alpha[i][t] * a[i][j] * b[j][sequence[t+1]] * beta[j][t+1];
-            }
+            //}
+            */
 
             Double denom = 0.0; //分母
 
@@ -125,10 +129,10 @@ public class HMMUtil {
         }
 
         double sum = 0;
-        for (int k=0; k<T; k++) {
+        for (int k=0; k<T-1; k++) {
             sum += sigma[k];
         }
-        sigma[T] = sum;
+        sigma[T-1] = sum;
 
         return sigma;
 
