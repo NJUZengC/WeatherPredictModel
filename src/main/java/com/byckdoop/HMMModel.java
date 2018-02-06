@@ -1,6 +1,7 @@
 package com.byckdoop;
 
 import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.DoubleWritable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,14 @@ public class HMMModel {
                 b[i][k] = (Math.random());
             }
         }
+    }
+
+    public DoubleWritable[] getWritablePi(){
+        DoubleWritable []doubleWritables = new DoubleWritable[pi.length];
+        for (int i=0;i<doubleWritables.length;i++){
+            doubleWritables[i] = new DoubleWritable(pi[i]);
+        }
+        return doubleWritables;
     }
 
 

@@ -65,7 +65,7 @@ public class WeatherPredictModelMain  {
             //getFileSystem()函数功能  Return the FileSystem that owns this Path.
             if (fileSystem.exists(new Path(otherArgs[3]+(index-1)))) {
                 System.out.println(path.toString());
-                fileSystem.delete(new Path(otherArgs[3]+(index-1)),true);
+                //fileSystem.delete(new Path(otherArgs[3]+(index-1)),true);
             }
             job.waitForCompletion(true);
             index++;

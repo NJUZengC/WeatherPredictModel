@@ -8,6 +8,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.StringTokenizer;
@@ -34,13 +36,52 @@ public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
         if(iterationNum == 0) {
             hmmModel.init(observeSize, hiddenSize);
         }else {
+            hmmModel.init(observeSize, hiddenSize);
             Path[] cacheFiles = context.getLocalCacheFiles();
             if(cacheFiles.length ==1) {
-                HMMArrayWritable debug = new HMMArrayWritable();
-                DoubleWritable[] doubleWritables = new DoubleWritable[]{new DoubleWritable(2.33)};
-                debug.set(doubleWritables);
-                context.write(new Text(WeatherModelConfig.debugInfo), debug);
+
+                Path path = cacheFiles[0];
+                String line;
+                String[] tokens;
+                BufferedReader dataReader = new BufferedReader(new FileReader(path.toString()));
+                try{
+                     int piLength = 0;
+                     int aLength = 0;
+                     int bLength = 0;
+                    while((line = dataReader.readLine())!=null){
+                        tokens = line.split(" ");
+                        if(tokens[0].trim().startsWith("I")){
+                            piLength += 1;
+                            assert(tokens.length == hmmModel.getHiddenSize()+1);
+                            for(int i=1;i<tokens.length;i++){
+                                hmmModel.getPi()[i-1] = Double.parseDouble(tokens[i]);
+                            }
+                        }else if(tokens[0].trim().startsWith("E")){
+                            bLength += 1;
+                            assert(tokens.length == hmmModel.getObserveSize()+1);
+                            int index = Integer.parseInt(tokens[0].trim().substring(1));
+                            for (int i=1;i<tokens.length;i++){
+                                hmmModel.getB()[index][i-1] = Double.parseDouble(tokens[i]);
+                            }
+
+                        }else if(tokens[0].trim().startsWith("T")){
+                            aLength += 1;
+                            assert(tokens.length == hmmModel.getHiddenSize()+1);
+                            int index = Integer.parseInt(tokens[0].trim().substring(1));
+                            for (int i=1;i<tokens.length;i++){
+                                hmmModel.getA()[index][i-1] = Double.parseDouble(tokens[i]);
+                            }
+                        }
+                    }
+                    assert(piLength==1 && aLength==hmmModel.getHiddenSize() && aLength==bLength);
+                }finally {
+                    dataReader.close();
+                }
             }
+            HMMArrayWritable debug = new HMMArrayWritable();
+            DoubleWritable[] doubleWritables = hmmModel.getWritablePi();
+            debug.set(doubleWritables);
+            context.write(new Text(WeatherModelConfig.debugInfo), debug);
         }
 
     }
