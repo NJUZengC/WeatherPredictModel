@@ -59,14 +59,16 @@ public class WeatherPredictModelMain  {
             MultipleOutputs.addNamedOutput(job, "Debug", TextOutputFormat.class, Text.class, Text.class);
             FileInputFormat.addInputPath(job, new Path(otherArgs[2]));
             FileOutputFormat.setOutputPath(job, new Path(otherArgs[3]+index));
-            Path path = new Path(otherArgs[3]+(index-1));
+            job.waitForCompletion(true);
+
+            int pass_index = index-1;
+            Path path = new Path(otherArgs[3]+pass_index);
             FileSystem fileSystem = path.getFileSystem(conf);
             //getFileSystem()函数功能  Return the FileSystem that owns this Path.
-            if (fileSystem.exists(new Path(otherArgs[3]+(index-1)))) {
-                System.out.println(path.toString());
-                //fileSystem.delete(new Path(otherArgs[3]+(index-1)),true);
+            if (fileSystem.exists(path)) {
+                //System.out.println(path.toString());
+                fileSystem.delete(path,true);
             }
-            job.waitForCompletion(true);
             index++;
         }
 
