@@ -6,7 +6,6 @@ import org.apache.hadoop.fs.Path;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.filecache.DistributedCache;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
@@ -28,15 +27,15 @@ public class WeatherPredictModelMain  {
             System.err.println("Usage: InvertedIndex <in> <out>");
             System.exit(4);
         }
-        int index = 0;
-        while (index < 2) {
+        int index = 1;
+        while (index < 5) {
             conf.set(WeatherModelConfig.observeSize, otherArgs[0]);
             conf.set(WeatherModelConfig.hiddenSize, otherArgs[1]);
             conf.setInt(WeatherModelConfig.iterationNum,index);
 
             @SuppressWarnings("deprecation")
             Job job = new Job(conf, "InterfaceFrequent");
-            if(index > 0) {
+            if(index > 1) {
                 String hdfspath =  otherArgs[3]+(index-1)+"/HMMMODEL-r-00000";
                 Path path = new Path(hdfspath);
                 FileSystem fileSystem = path.getFileSystem(conf);

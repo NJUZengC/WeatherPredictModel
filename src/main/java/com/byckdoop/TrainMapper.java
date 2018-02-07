@@ -22,6 +22,9 @@ import java.util.StringTokenizer;
 public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
 
     HMMModel hmmModel = new HMMModel();
+    double [] pi;
+    double [][] a;
+    double [][] b;
 
     public void setup(Context context)throws IOException, InterruptedException{
         Configuration configuration = context.getConfiguration();
@@ -33,10 +36,14 @@ public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
             System.out.println("Exception <= 0");
             System.exit(-1);
         }
-        if(iterationNum == 0) {
+        if(iterationNum == 1) {
             hmmModel.init(observeSize, hiddenSize);
         }else {
             hmmModel.init(observeSize, hiddenSize);
+            pi = new double[hiddenSize];
+            a = new double[hiddenSize][hiddenSize];
+            b = new double[hiddenSize][observeSize];
+
             Path[] cacheFiles = context.getLocalCacheFiles();
             if(cacheFiles.length ==1) {
 
@@ -54,14 +61,14 @@ public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
                             piLength += 1;
                             assert(tokens.length == hmmModel.getHiddenSize()+1);
                             for(int i=1;i<tokens.length;i++){
-                                hmmModel.getPi()[i-1] = Double.parseDouble(tokens[i]);
+                                pi[i-1] = Double.parseDouble(tokens[i]);
                             }
                         }else if(tokens[0].trim().startsWith("E")){
                             bLength += 1;
                             assert(tokens.length == hmmModel.getObserveSize()+1);
                             int index = Integer.parseInt(tokens[0].trim().substring(1));
                             for (int i=1;i<tokens.length;i++){
-                                hmmModel.getB()[index][i-1] = Double.parseDouble(tokens[i]);
+                                b[index][i-1] = Double.parseDouble(tokens[i]);
                             }
 
                         }else if(tokens[0].trim().startsWith("T")){
@@ -69,9 +76,12 @@ public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
                             assert(tokens.length == hmmModel.getHiddenSize()+1);
                             int index = Integer.parseInt(tokens[0].trim().substring(1));
                             for (int i=1;i<tokens.length;i++){
-                                hmmModel.getA()[index][i-1] = Double.parseDouble(tokens[i]);
+                                a[index][i-1] = Double.parseDouble(tokens[i]);
                             }
                         }
+                        hmmModel.setPi(pi);
+                        hmmModel.setA(a);
+                        hmmModel.setB(b);
                     }
                     assert(piLength==1 && aLength==hmmModel.getHiddenSize() && aLength==bLength);
                 }finally {
