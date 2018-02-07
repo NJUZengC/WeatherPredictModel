@@ -23,18 +23,19 @@ public class WeatherPredictModelMain  {
 
         Configuration conf = new Configuration();
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-        if (otherArgs.length != 4) {
-            System.err.println("Usage: InvertedIndex <in> <out>");
-            System.exit(4);
+        if (otherArgs.length != 5) {
+            System.err.println("Usage: WeatherPredictModelMain <observeSize> <hiddenSize> <input> <output> <maxTurns>");
+            System.exit(-1);
         }
         int index = 1;
-        while (index < 5) {
+        int maxTurns = Integer.parseInt(otherArgs[4]);
+        while (index < maxTurns) {
             conf.set(WeatherModelConfig.observeSize, otherArgs[0]);
             conf.set(WeatherModelConfig.hiddenSize, otherArgs[1]);
             conf.setInt(WeatherModelConfig.iterationNum,index);
 
             @SuppressWarnings("deprecation")
-            Job job = new Job(conf, "InterfaceFrequent");
+            Job job = new Job(conf, "WeatherPredictModel");
             if(index > 1) {
                 String hdfspath =  otherArgs[3]+(index-1)+"/HMMMODEL-r-00000";
                 Path path = new Path(hdfspath);
