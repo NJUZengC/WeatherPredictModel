@@ -2,17 +2,15 @@ package com.byckdoop;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.ArrayWritable;
+
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.IntWritable;
+
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.StringTokenizer;
+
 
 
 /**
@@ -40,52 +38,15 @@ public class TrainMapper extends Mapper<Object, Text, Text, HMMArrayWritable> {
             hmmModel.init(observeSize, hiddenSize);
         }else {
             hmmModel.init(observeSize, hiddenSize);
-            pi = new double[hiddenSize];
-            a = new double[hiddenSize][hiddenSize];
-            b = new double[hiddenSize][observeSize];
 
             Path[] cacheFiles = context.getLocalCacheFiles();
             if(cacheFiles.length ==1) {
 
                 Path path = cacheFiles[0];
-                String line;
-                String[] tokens;
-                BufferedReader dataReader = new BufferedReader(new FileReader(path.toString()));
                 try{
-                     int piLength = 0;
-                     int aLength = 0;
-                     int bLength = 0;
-                    while((line = dataReader.readLine())!=null){
-                        tokens = line.split(" ");
-                        if(tokens[0].trim().startsWith("I")){
-                            piLength += 1;
-                            assert(tokens.length == hmmModel.getHiddenSize()+1);
-                            for(int i=1;i<tokens.length;i++){
-                                pi[i-1] = Double.parseDouble(tokens[i]);
-                            }
-                        }else if(tokens[0].trim().startsWith("E")){
-                            bLength += 1;
-                            assert(tokens.length == hmmModel.getObserveSize()+1);
-                            int index = Integer.parseInt(tokens[0].trim().substring(1));
-                            for (int i=1;i<tokens.length;i++){
-                                b[index][i-1] = Double.parseDouble(tokens[i]);
-                            }
-
-                        }else if(tokens[0].trim().startsWith("T")){
-                            aLength += 1;
-                            assert(tokens.length == hmmModel.getHiddenSize()+1);
-                            int index = Integer.parseInt(tokens[0].trim().substring(1));
-                            for (int i=1;i<tokens.length;i++){
-                                a[index][i-1] = Double.parseDouble(tokens[i]);
-                            }
-                        }
-                        hmmModel.setPi(pi);
-                        hmmModel.setA(a);
-                        hmmModel.setB(b);
-                    }
-                    assert(piLength==1 && aLength==hmmModel.getHiddenSize() && aLength==bLength);
-                }finally {
-                    dataReader.close();
+                    hmmModel = HMMUtil.loadModel(hmmModel,path);
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
             }
             HMMArrayWritable debug = new HMMArrayWritable();

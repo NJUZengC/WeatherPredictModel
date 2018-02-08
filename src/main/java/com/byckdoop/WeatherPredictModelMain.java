@@ -13,6 +13,8 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
+import java.io.File;
+
 /**
  * @author zengc
  * @date 2018/2/3 13:28
@@ -29,10 +31,12 @@ public class WeatherPredictModelMain  {
         }
         int index = 1;
         int maxTurns = Integer.parseInt(otherArgs[4]);
-        while (index < maxTurns) {
+        while (index <= maxTurns) {
             conf.set(WeatherModelConfig.observeSize, otherArgs[0]);
             conf.set(WeatherModelConfig.hiddenSize, otherArgs[1]);
             conf.setInt(WeatherModelConfig.iterationNum,index);
+            conf.set(WeatherModelConfig.outputFile,otherArgs[3]+index+"/HMMMODEL-r-00000");
+            conf.set(WeatherModelConfig.testFile,"test/test.txt");
 
             @SuppressWarnings("deprecation")
             Job job = new Job(conf, "WeatherPredictModel");
@@ -44,7 +48,7 @@ public class WeatherPredictModelMain  {
                 if (!fileSystem.exists(new Path(hdfspath))) {
                     System.out.println("Something Wrong in HMMMODEL");
                 }
-                System.out.println("Something Wright in HMMMODEL");
+                //System.out.println("Something Wright in HMMMODEL");
                 job.addCacheFile( path.toUri());
             }
             job.setJarByClass(WeatherPredictModelMain.class);
@@ -67,9 +71,23 @@ public class WeatherPredictModelMain  {
             FileSystem fileSystem = path.getFileSystem(conf);
             //getFileSystem()函数功能  Return the FileSystem that owns this Path.
             if (fileSystem.exists(path)) {
-                //System.out.println(path.toString());
-                fileSystem.delete(path,true);
+                System.out.println(path.toString());
+                //fileSystem.delete(path,true);
             }
+
+            String outputfile = otherArgs[3]+index+"/HMMMODEL-r-00000";
+            File pathFile = new File("my.txt");
+            if(pathFile.exists()&&pathFile.isFile())
+                pathFile.delete();
+            Runtime.getRuntime().exec("bin/hdfs dfs -get "+outputfile+" my.txt");
+            Thread.sleep(5000);
+
+            HMMModel hmmModel = new HMMModel();
+            hmmModel.init(Integer.parseInt(otherArgs[0]),Integer.parseInt(otherArgs[1]));
+            double accurateRate = HMMUtil.evaluate(hmmModel,new Path("my.txt"),new Path("test.txt"));
+            //double accurateRate = conf.getDouble(WeatherModelConfig.accurateRate,-0.05);
+            System.out.println("ACCURATE RATE : " + accurateRate);
+
             index++;
         }
 

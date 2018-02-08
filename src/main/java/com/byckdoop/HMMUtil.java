@@ -1,5 +1,18 @@
 package com.byckdoop;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IOUtils;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * @author zengc
  * @date 2018/2/4 18:53
@@ -217,11 +230,13 @@ public class HMMUtil {
         for (int o=0; o<observeSize; o++) {
             sequence[T-1] = o;
             int nprob = 0;
-
+            double [][]alpha = forward(hmmModel, sequence);
+            //System.out.println("alpha: "+Arrays.toString(alpha[0]));
             for (int i=0; i<hiddenSize; i++) {
-                nprob += forward(hmmModel, sequence)[i][T-1];
+                nprob += alpha[i][T-1];
                 //记录：给定模型，当前观测序列出现的概率；
             }
+            //System.out.println(nprob);
             if (nprob > prob) {
                 prob = nprob;
                 observe = o;
@@ -232,6 +247,106 @@ public class HMMUtil {
         
         return observe;
     }
+
+    public static HMMModel loadModel(HMMModel hmmModel,Path hmmModelPath)throws Exception{
+        double[] pi = new double[hmmModel.getHiddenSize()];
+        double [][]a = new double[hmmModel.getHiddenSize()][hmmModel.getHiddenSize()];
+        double [][] b = new double[hmmModel.getHiddenSize()][hmmModel.getObserveSize()];
+        String []tokens;
+        String line;
+        BufferedReader dataReader = new BufferedReader(new FileReader(hmmModelPath.toString()));
+        try{
+            int piLength = 0;
+            int aLength = 0;
+            int bLength = 0;
+            while((line = dataReader.readLine())!=null){
+                tokens = line.split(" ");
+                if(tokens[0].trim().startsWith("I")){
+                    piLength += 1;
+                    assert(tokens.length == hmmModel.getHiddenSize()+1);
+                    for(int i=1;i<tokens.length;i++){
+                        pi[i-1] = Double.parseDouble(tokens[i]);
+                    }
+                }else if(tokens[0].trim().startsWith("E")){
+                    bLength += 1;
+                    assert(tokens.length == hmmModel.getObserveSize()+1);
+                    int index = Integer.parseInt(tokens[0].trim().substring(1));
+                    for (int i=1;i<tokens.length;i++){
+                        b[index][i-1] = Double.parseDouble(tokens[i]);
+                    }
+
+                }else if(tokens[0].trim().startsWith("T")){
+                    aLength += 1;
+                    assert(tokens.length == hmmModel.getHiddenSize()+1);
+                    int index = Integer.parseInt(tokens[0].trim().substring(1));
+                    for (int i=1;i<tokens.length;i++){
+                        a[index][i-1] = Double.parseDouble(tokens[i]);
+                    }
+                }
+                hmmModel.setPi(pi);
+                hmmModel.setA(a);
+                hmmModel.setB(b);
+            }
+            assert(piLength==1 && aLength==hmmModel.getHiddenSize() && aLength==bLength);
+        }finally {
+            dataReader.close();
+        }
+        return hmmModel;
+    }
+
+    public static double evaluate(HMMModel hmmModel,Path hmmModelPath,Path testPath)throws Exception{
+
+
+        hmmModel = loadModel(hmmModel,hmmModelPath);
+        //System.out.println(hmmModel);
+        ArrayList<int[]> testSample = new ArrayList<>();
+        String []tokens;
+        String line;
+        BufferedReader dataReader = new BufferedReader(new FileReader(testPath.toString()));
+        try{
+
+            while((line = dataReader.readLine())!=null){
+                tokens = line.split(" ");
+                int[] res = new int[tokens.length];
+                for(int i=0;i<res.length;i++)
+                    res[i] = Integer.parseInt(tokens[i].trim());
+                if(res.length>0)
+                    testSample.add(res);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            dataReader.close();
+        }
+
+        int correctNum = 0;
+        for(int i=0;i<testSample.size();i++){
+            int[] sequence = testSample.get(i);
+            //System.out.println("before: "+ Arrays.toString(sequence));
+            int realIndex = sequence[sequence.length-1];
+            int index = predict(hmmModel,sequence);
+            //System.out.println("after: "+sequence[sequence.length-1]);
+            //System.out.println(index);
+            if(index == realIndex){
+                System.out.println("correct");
+                correctNum += 1;
+            }
+        }
+        return correctNum*1.0/testSample.size();
+
+    }
+
+    public static int readHDFS(Path path)throws Exception{
+        Configuration conf = new Configuration();
+        FileSystem fs = FileSystem.get(path.toUri(), conf);
+        FSDataInputStream hdfsInStream = fs.open(path);
+
+        byte[] ioBuffer =new byte[1024];
+        int res = hdfsInStream.read(ioBuffer);
+        return res;
+    }
+
 
 
 }

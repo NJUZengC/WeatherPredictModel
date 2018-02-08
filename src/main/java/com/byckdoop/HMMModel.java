@@ -4,6 +4,7 @@ import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.DoubleWritable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -96,5 +97,14 @@ public class HMMModel {
         this.hiddenSize = hiddenSize;
     }
 
-
+    @Override
+    public String toString() {
+        return "HMMModel{" +
+                "observeSize=" + observeSize +
+                ", hiddenSize=" + hiddenSize +
+                ", pi=" + Arrays.toString(pi) +
+                ", a=" + Arrays.toString(a[0]) +
+                ", b=" + Arrays.toString(b[0]) +
+                '}';
+    }
 }

@@ -1,6 +1,7 @@
 package com.byckdoop;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.ArrayWritable;
 
 import org.apache.hadoop.io.DoubleWritable;
@@ -83,5 +84,24 @@ public class TrainReducer extends Reducer<Text, HMMArrayWritable, Text, ArrayWri
 
         }
 
+    }
+
+    public void cleanup(Context context) throws IOException, InterruptedException {
+        /*
+        output.close();
+        output = new MultipleOutputs<Text,ArrayWritable>(context);
+        String outputFile = context.getConfiguration().get(WeatherModelConfig.outputFile);
+        String testFile = context.getConfiguration().get(WeatherModelConfig.testFile);
+        try {
+            double accurateRate = HMMUtil.evaluate(hmmModel,new Path(outputFile),new Path(testFile));
+            HMMArrayWritable arrayWritable = new HMMArrayWritable();
+            DoubleWritable[] t = new DoubleWritable[]{new DoubleWritable(accurateRate)};
+            arrayWritable.set(t);
+            output.write("Debug",new Text(WeatherModelConfig.debugInfo),arrayWritable);
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        */
     }
 }

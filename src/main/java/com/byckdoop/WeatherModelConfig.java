@@ -14,4 +14,10 @@ public interface WeatherModelConfig {
     String iterationNum = "com.byckdoop.iterationNum";
 
     String debugInfo = "com.byckdoop.debugInfo";
+
+    String accurateRate = "com.byckdoop.accurateRate";
+
+    String outputFile = "com.byckdoop.outputFile";
+
+    String testFile = "com.byckdoop.testFile";
 }
