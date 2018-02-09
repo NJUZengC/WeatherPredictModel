@@ -34,6 +34,7 @@ public class HMMUtil {
             alpha[i][0] = pi[i] * b[i][sequence[0]];
         }
 
+        //递推
         for (int t=0; t<T-1; t++){
             for (int j=0; j<hiddenSize; j++){
 
@@ -67,7 +68,7 @@ public class HMMUtil {
 
                 beta[i][t] = 0.0;
                 for (int j=0; j<hiddenSize; j++){
-                    beta[i][t] += a[i][j] * b[j][sequence[t+1]] * beta[j][t+1];
+                    beta[i][t] += (a[i][j] * b[j][sequence[t+1]] * beta[j][t+1]) ;
                 }
 
             }
@@ -87,9 +88,9 @@ public class HMMUtil {
 
         for (int t=0; t<T; t++){
 
-            Double num = alpha[i][t] * beta[i][t]; //分子
+            double num = alpha[i][t] * beta[i][t]; //分子
 
-            Double denom = 0.0; //分母
+            double denom = 0.0; //分母
             for (int j=0; j<hiddenSize; j++){
                 denom += alpha[j][t] * beta[j][t];
             }
@@ -98,7 +99,7 @@ public class HMMUtil {
 
         }
 
-        double sum = 0;
+        double sum = 0.0;
         for (int k=0; k<T; k++) {
             sum += gamma[k];
         }
@@ -120,7 +121,7 @@ public class HMMUtil {
 
         for (int t=0; t<T-1; t++){
 
-            Double num = alpha[i][t] * a[i][j] * b[j][sequence[t+1]] * beta[j][t+1]; //分子
+            double num = alpha[i][t] * a[i][j] * b[j][sequence[t+1]] * beta[j][t+1]; //分子
             /*
             if (t == T-1) {
                 //在T时刻（从1开始计算），分子的值为：
@@ -132,7 +133,7 @@ public class HMMUtil {
             //}
             */
 
-            Double denom = 0.0; //分母
+            double denom = 0.0; //分母
 
             for (int k=0; k<hiddenSize; k++){
                 denom += (alpha[k][t] * beta[k][t]);
@@ -141,7 +142,7 @@ public class HMMUtil {
             sigma[t] = num/denom;
         }
 
-        double sum = 0;
+        double sum = 0.0;
         for (int k=0; k<T-1; k++) {
             sum += sigma[k];
         }
@@ -175,7 +176,7 @@ public class HMMUtil {
         for (int t=1; t<T; t++){
             for (int i=0; i<hiddenSize; i++){
 
-                double prob = -1;
+                double prob = 0.0;
                 int state = 0;
 
                 for (int j=0; j<hiddenSize; j++){
@@ -197,7 +198,7 @@ public class HMMUtil {
         }
 
         //终止
-        double prob = -1;
+        double prob = 0.0;
         for (int i=0; i<hiddenSize; i++){
             if (delta[i][T-1]>prob) {
                 prob =delta[i][T-1];
@@ -229,7 +230,7 @@ public class HMMUtil {
 
         for (int o=0; o<observeSize; o++) {
             sequence[T-1] = o;
-            int nprob = 0;
+            double nprob = 0.0;
             double [][]alpha = forward(hmmModel, sequence);
             //System.out.println("alpha: "+Arrays.toString(alpha[0]));
             for (int i=0; i<hiddenSize; i++) {
